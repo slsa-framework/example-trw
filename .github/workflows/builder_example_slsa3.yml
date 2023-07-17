@@ -84,7 +84,7 @@ jobs:
     steps:
       - name: Generate the token
         id: generate
-        uses: slsa-framework/slsa-github-generator/actions/delegator/setup-generic@main
+        uses: slsa-framework/slsa-github-generator/actions/delegator/setup-generic@v1.7.0
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-rekor-log-public: ${{ inputs.rekor-log-public }}
@@ -100,7 +100,7 @@ jobs:
       contents: write # For asset uploads.
       packages: write # For package uploads.
       actions: read # For the entrypoint.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/delegator_generic_slsa3.yml@main
+    uses: slsa-framework/slsa-github-generator/.github/workflows/delegator_generic_slsa3.yml@v1.7.0
     with:
       slsa-token: ${{ needs.slsa-setup.outputs.slsa-token }}
     secrets:
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download provenance
-        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@main
+        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@v1.7.0
         with:
           name: ${{ needs.slsa-run.outputs.attestations-download-name }}
           sha256: ${{ needs.slsa-run.outputs.attestations-download-sha256 }}
