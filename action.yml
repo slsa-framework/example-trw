@@ -64,3 +64,13 @@ runs:
         echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
         echo "status=success" >> "$GITHUB_OUTPUT"
 
+    # NOTE: We don't handle name collision if multiple
+    # builders are run concurrently. This is simplified
+    # for our e2e tests.
+    - name: Upload the artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.build.outputs.artifact }}
+        path: ${{ steps.build.outputs.artifact }}
+
+
