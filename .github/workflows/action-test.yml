@@ -1,0 +1,16 @@
+name: Action test
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: build
+        uses: laurentsimon/byob-doc@main
+        with:
+          artifact: "hello-world.bin"
+          content: "hello world"
+          username: "john"
+          password: "$_passw@rd_$"
+      - name: run
+        run:
+          cat hello-world.bin
