@@ -15,7 +15,7 @@ cat <<EOF >DATA
     "attestations":
     [
         {
-            "name": "${artifact}.intoto",
+            "name": "${artifact}",
             "subjects":
             [
                 ${subjects}
