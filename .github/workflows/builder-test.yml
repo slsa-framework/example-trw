@@ -28,7 +28,7 @@ jobs:
       contents: write # For asset release.
       packages: write # For package upload.
       actions: read # For getting workflow run info.
-    uses: slsa-framework/example-trw/.github/workflows/builder_example_slsa3.yml@v1.0.0
+    uses: slsa-framework/example-trw/.github/workflows/builder_example_slsa3.yml@main
     with:
       artifact: my-artifact
       content: "hello world"
