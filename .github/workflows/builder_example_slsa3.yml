@@ -66,6 +66,10 @@ on:
         description: "Name of the artifact uploaded"
         value: "${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-name }}"
 
+      artifact-download-sha256:
+        description: "Name of the artifact uploaded"
+        value: "${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-sha256 }}"
+
       status:
         description: "Status of the build"
         value: "${{ fromJSON(jobs.slsa-run.outputs.build-artifacts-outputs).status }}"
