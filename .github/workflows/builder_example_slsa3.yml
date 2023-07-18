@@ -60,7 +60,7 @@ on:
 
       artifact:
         description: "Name of the artifact built"
-        value: "${{ fromJSON(jobs.slsa-run.outputs.build-artifacts-outputs).artifact }}"
+        value: "${{ fromJSON(jobs.slsa-run.outputs.build-artifacts-outputs).name }}"
 
       status:
         description: "Status of the build"
@@ -78,15 +78,17 @@ jobs:
   slsa-setup:
     permissions:
       id-token: write # For token creation.
+      contents: read # To read the repo
+      actions: read # To read workflow info
     outputs:
       slsa-token: ${{ steps.generate.outputs.slsa-token }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate the token
         id: generate
-        uses: slsa-framework/slsa-github-generator/actions/delegator/setup-generic@main
+        uses: slsa-framework/slsa-github-generator/actions/delegator/setup-generic@v1.7.0
         with:
-          slsa-workflow-recipient: "delegator_generic_slsa3.yml"
+          slsa-workflow-recipient: "delegator_lowperms-generic_slsa3.yml"
           slsa-rekor-log-public: ${{ inputs.rekor-log-public }}
           slsa-runner-label: "ubuntu-latest"
           slsa-build-action-path: "./internal/callback_action"
@@ -97,10 +99,9 @@ jobs:
     needs: [slsa-setup]
     permissions:
       id-token: write # For signing.
-      contents: write # For asset uploads.
-      packages: write # For package uploads.
+      contents: read # For code access.
       actions: read # For the entrypoint.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/delegator_generic_slsa3.yml@main
+    uses: slsa-framework/slsa-github-generator/.github/workflows/delegator_lowperms-generic_slsa3.yml@v1.7.0
     with:
       slsa-token: ${{ needs.slsa-setup.outputs.slsa-token }}
     secrets:
@@ -115,12 +116,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download provenance
-        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@main
+        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@v1.7.0
         with:
           name: ${{ needs.slsa-run.outputs.attestations-download-name }}
           sha256: ${{ needs.slsa-run.outputs.attestations-download-sha256 }}
 
-      - name: Upload
+      - name: Upload provenance
         env:
           GH_TOKEN: ${{ github.token }}
           OUT: ${{ needs.slsa-run.outputs.attestations-download-name }}
@@ -139,3 +140,32 @@ jobs:
               file="$line"
               gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
           done < FILES
+
+      # Artifacts are downloaded in the current directory. The downloaded folder
+      # is the one uploaded by the TCA, which in our case is called "artifacts".
+      - name: Download artifacts
+        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-download-folder@main
+        with:
+          name: ${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-name }}
+          sha256: ${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-sha256 }}
+          path: "."
+
+      - name: Upload the artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          # Get the tag.
+          tag="$(echo $REF | cut -d '/' -f3-)"
+
+          # List artifacts.
+          find artifacts/ -type f | tee ./FILES
+
+          # Upload artifacts.
+          while IFS= read -r line; do
+              file="$line"
+              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+          done < FILES
+        

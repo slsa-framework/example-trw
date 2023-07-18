@@ -82,7 +82,7 @@ runs:
     - name: Create folder to share
       shell: bash
       env:
-        ARTIFACT: "${{ inputs.artifact }}"
+        ARTIFACT: "${{ fromJson(inputs.slsa-workflow-inputs).artifact }}"
       run: |
         set -euo pipefail
 
