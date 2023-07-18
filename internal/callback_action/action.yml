@@ -77,6 +77,14 @@ runs:
       # WARNING: This is not cryptographically secure and will show in logs!
       uses: slsa-framework/slsa-github-generator/actions/delegator/random@main
 
+    - name: Generate layout file
+      id: generate-layout
+      env:
+        SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ inputs.slsa-layout-file }}
+        ARTIFACT: ${{ fromJson(inputs.slsa-workflow-inputs).artifact }}
+      shell: bash
+      run: ./../__TOOL_ACTION_DIR__/generate-layout.sh
+
     # Create the folder to share.
     # The folder is local, so need its name needs not be randomized.
     - name: Create folder to share
@@ -96,11 +104,3 @@ runs:
       with:
         name: "${{ steps.rng.outputs.random }}-artifacts"
         path: artifacts
-
-    - name: Generate layout file
-      id: generate-layout
-      env:
-        SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ inputs.slsa-layout-file }}
-        ARTIFACT: ${{ fromJson(inputs.slsa-workflow-inputs).artifact }}
-      shell: bash
-      run: ./../__TOOL_ACTION_DIR__/generate-layout.sh
