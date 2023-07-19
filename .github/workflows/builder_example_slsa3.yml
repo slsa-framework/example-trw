@@ -106,36 +106,3 @@ jobs:
     secrets:
       secret1: ${{ inputs.password }}
       secret2: ${{ inputs.token }}
-  
-  publish:
-    needs: [slsa-run]
-    if: startsWith(github.ref, 'refs/tags/')
-    permissions:
-      contents: write # For asset uploads.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download provenance
-        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@main
-        with:
-          name: ${{ needs.slsa-run.outputs.attestations-download-name }}
-          sha256: ${{ needs.slsa-run.outputs.attestations-download-sha256 }}
-
-      - name: Upload
-        env:
-          GH_TOKEN: ${{ github.token }}
-          OUT: ${{ needs.slsa-run.outputs.attestations-download-name }}
-          REF: ${{ github.ref }}
-        run: |
-          set -euo pipefail
-
-          # Get the tag.
-          tag="$(echo $REF | cut -d '/' -f3-)"
-
-          # List attestations.
-          find "$OUT" -type f | tee ./FILES
-
-          # Upload attestations.
-          while IFS= read -r line; do
-              file="$line"
-              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
-          done < FILES
