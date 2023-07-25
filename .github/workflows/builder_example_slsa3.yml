@@ -32,6 +32,11 @@ on:
         required: true
         type: string
 
+      commit-sha:
+        description: "Commit sha of the repo"
+        required: false
+        type: string
+
       username:
         description: "Username for a registry"
         default: "bot-account"
@@ -92,6 +97,7 @@ jobs:
           slsa-build-action-path: "./internal/callback_action"
           slsa-workflow-inputs: ${{ toJson(inputs) }}
           slsa-workflow-masked-inputs: username
+          slsa-checkout-sha1: ${{ inputs.commit-sha }}
 
   slsa-run:
     needs: [slsa-setup]
