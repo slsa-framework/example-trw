@@ -31,6 +31,6 @@ jobs:
     uses: slsa-framework/example-trw/.github/workflows/builder_example_slsa3.yml@v3.0.0
     with:
       artifact: my-artifact
-      content: "hello world"
+      content: src/build.txt
     secrets:
       password: ${{ secrets.PASSWORD }}
