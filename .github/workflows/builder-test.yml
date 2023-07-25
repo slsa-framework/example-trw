@@ -34,6 +34,6 @@ jobs:
       filename: src/build.txt
       # https://github.com/slsa-framework/example-trw/commit/bbcb6f6eb5fd2f83f81c5c79e7d76315bfd1223d
       # contains "Hello World 2", whereas main has "Hello World".
-      commit-sha1: bbcb6f6eb5fd2f83f81c5c79e7d76315bfd1223d
+      commit-sha: bbcb6f6eb5fd2f83f81c5c79e7d76315bfd1223d
     secrets:
       password: ${{ secrets.PASSWORD }}
