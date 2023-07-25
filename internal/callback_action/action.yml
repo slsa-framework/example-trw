@@ -59,7 +59,7 @@ runs:
       id: build
       with:
         artifact: ${{ fromJson(inputs.slsa-workflow-inputs).artifact }}
-        content: ${{ fromJson(inputs.slsa-workflow-inputs).content }}
+        filename: ${{ fromJson(inputs.slsa-workflow-inputs).filename }}
         username: ${{ fromJson(inputs.slsa-workflow-inputs).username }}
         password: ${{ inputs.slsa-workflow-secret1 }}
         token: ${{ inputs.slsa-workflow-secret2 || github.token }}

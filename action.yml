@@ -18,8 +18,8 @@ inputs:
   artifact:
     description: "Artifact name to build"
     required: true
-  content:
-    description: "Artifact content to build"
+  filename:
+    description: "Filename to build"
     required: true
   username:
     description: "Username for a registry"
@@ -48,14 +48,14 @@ runs:
       shell: bash
       env:
         ARTIFACT: "${{ inputs.artifact }}"
-        CONTENT: "${{ inputs.content }}"
+        FILENAME: "${{ inputs.filename }}"
         USERNAME: "${{ inputs.username }}"
         PASSWORD: "${{ inputs.password }}"
         TOKEN: "${{ inputs.token }}"
       run: |
         set -euo pipefail
 
-        echo "${CONTENT}" > "${ARTIFACT}"
+        cat "${FILENAME}" > "${ARTIFACT}"
         echo "Username: ${USERNAME}"
         echo "Password: ${PASSWORD}"
         echo "Token: ${TOKEN}"
