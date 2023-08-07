@@ -83,7 +83,7 @@ runs:
     - name: Create random value
       id: rng
       # WARNING: This is not cryptographically secure and will show in logs!
-      uses: slsa-framework/slsa-github-generator/actions/delegator/random@main
+      uses: slsa-framework/slsa-github-generator/actions/delegator/random@v1.8.0
 
     # Create the folder to share.
     # The folder is local, so need its name needs not be randomized.
@@ -100,7 +100,7 @@ runs:
     # Share the artifacts folder, with a unique randomized name.
     - name: Share artifacts
       id: upload
-      uses: slsa-framework/slsa-github-generator/actions/delegator/secure-upload-folder@main
+      uses: slsa-framework/slsa-github-generator/actions/delegator/secure-upload-folder@v1.8.0
       with:
         name: "${{ steps.rng.outputs.random }}-artifacts"
         path: artifacts
