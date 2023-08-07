@@ -31,6 +31,6 @@ jobs:
     uses: slsa-framework/example-trw/.github/workflows/builder_high-perms-checkout_slsa3.yml@main # v0.0.1 has all refs at main.
     with:
       artifact: my-artifact
-      content: "hello world"
+      filename: high-perms-checkout/src/build.txt
     secrets:
       password: ${{ secrets.PASSWORD }}
