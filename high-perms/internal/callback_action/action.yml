@@ -1,0 +1,73 @@
+name: Example builder internal Action
+
+description: Example builder internal Action
+
+inputs:
+  slsa-workflow-inputs:
+    description: 'All the inputs formatted as a map'
+    type: string
+    required: true
+
+  slsa-layout-file:
+    description: 'Location to store the layout content'
+    type: string
+    required: true
+  
+  slsa-workflow-secret1:
+    description: 'secret1 stores the password'
+    type: string
+    required: false
+
+  slsa-workflow-secret2:
+    description: 'secret2 stores the token'
+    type: string
+    required: false
+  
+  # Unused secret inputs.
+  slsa-workflow-secret3: {}
+  slsa-workflow-secret4: {}
+  slsa-workflow-secret5: {}
+  slsa-workflow-secret6: {}
+  slsa-workflow-secret7: {}
+  slsa-workflow-secret8: {}
+  slsa-workflow-secret9: {}
+  slsa-workflow-secret10: {}
+  slsa-workflow-secret11: {}
+  slsa-workflow-secret12: {}
+  slsa-workflow-secret13: {}
+  slsa-workflow-secret14: {}
+  slsa-workflow-secret15: {}
+
+outputs:
+  artifact:
+    description: "Name of the artifact built"
+    value: "${{ steps.build.outputs.artifact }}"
+  status:
+    description: "Status of the build"
+    value: "${{ steps.build.outputs.status }}"
+
+runs:
+  using: 'composite'
+  steps:
+    # NOTE: the repository is already cloned by the caller, so there's no need to
+    # checkout ourselves.
+
+    # This calls the main Action, e.g., ./../__TOOL_CHECKOUT_DIR__/<path/to/action>
+    # if path is left empty, the Action's action.yml is located at the root of the repository.
+    - name: Run main Action
+      uses: ./../__TOOL_CHECKOUT_DIR__/high-perms
+      id: build
+      with:
+        artifact: ${{ fromJson(inputs.slsa-workflow-inputs).artifact }}
+        content: ${{ fromJson(inputs.slsa-workflow-inputs).content }}
+        username: ${{ fromJson(inputs.slsa-workflow-inputs).username }}
+        password: ${{ inputs.slsa-workflow-secret1 }}
+        token: ${{ inputs.slsa-workflow-secret2 || github.token }}
+
+    - name: Generate layout file
+      id: generate-layout
+      env:
+        SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ inputs.slsa-layout-file }}
+        ARTIFACT: ${{ fromJson(inputs.slsa-workflow-inputs).artifact }}
+      shell: bash
+      run: ./../__TOOL_ACTION_DIR__/generate-layout.sh
