@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: SLSA 3 Example builder
+name: SLSA 3 high perms builder
 
 permissions: {}
 
