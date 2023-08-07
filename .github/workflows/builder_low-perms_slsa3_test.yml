@@ -26,7 +26,6 @@ jobs:
     permissions:
       id-token: write # For signing
       contents: write # For asset release.
-      packages: write # For package upload.
       actions: read # For getting workflow run info.
     uses: slsa-framework/example-trw/.github/workflows/builder_low-perms_slsa3.yml@main # v0.0.1 has all refs at main.
     with:
