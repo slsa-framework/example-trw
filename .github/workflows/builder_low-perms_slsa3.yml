@@ -1,0 +1,179 @@
+# Copyright 2023 SLSA Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: SLSA 3 low perms builder
+
+permissions: {}
+
+on:
+
+  workflow_call:
+
+    inputs:
+
+      artifact:
+        description: "Artifact name to build"
+        required: true
+        type: string
+
+      content:
+        description: "Artifact content to build"
+        required: true
+        type: string
+
+      username:
+        description: "Username for a registry"
+        default: "bot-account"
+        required: false
+        type: string
+
+      # NOTE: the additional inputs below are to support additional
+      # functionality of the workflow.
+      rekor-log-public:
+        description: "Allow publication of your repository name on the public Rekor log"
+        required: false
+        type: boolean
+        default: false
+
+    secrets:
+
+      password:
+        required: false
+        description: "Password for a registry"
+
+      token:
+        description: "Token for a registry or GitHub"
+        required: false
+
+    outputs:
+
+      artifact:
+        description: "Name of the artifact built"
+        value: "${{ fromJSON(jobs.slsa-run.outputs.build-artifacts-outputs).artifact }}"
+
+      artifact-download-name:
+        description: "Name of the artifact uploaded"
+        value: "${{ fromJson(jobs.slsa-run.outputs.build-artifacts-outputs).artifact-download-name }}"
+
+      artifact-download-sha256:
+        description: "Name of the artifact uploaded"
+        value: "${{ fromJson(jobs.slsa-run.outputs.build-artifacts-outputs).artifact-download-sha256 }}"
+
+      status:
+        description: "Status of the build"
+        value: "${{ fromJSON(jobs.slsa-run.outputs.build-artifacts-outputs).status }}"
+
+      provenance-download-name:
+        description: "The name of the provenance attestation uploaded to the workflow run."
+        value: ${{ jobs.slsa-run.outputs.attestations-download-name }}
+
+      provenance-download-sha256:
+        description: "The sha256 of the provenance attestation uploaded to the workflow run."
+        value: ${{ jobs.slsa-run.outputs.attestations-download-sha256 }}
+
+jobs:
+  slsa-setup:
+    permissions:
+      id-token: write # For token creation.
+      contents: read # To read the repo
+      actions: read # To read workflow info
+    outputs:
+      slsa-token: ${{ steps.generate.outputs.slsa-token }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate the token
+        id: generate
+        uses: slsa-framework/slsa-github-generator/actions/delegator/setup-generic@main
+        with:
+          slsa-workflow-recipient: "delegator_lowperms-generic_slsa3.yml"
+          slsa-rekor-log-public: ${{ inputs.rekor-log-public }}
+          slsa-runner-label: "ubuntu-latest"
+          slsa-build-action-path: "./internal/callback_action"
+          slsa-workflow-inputs: ${{ toJson(inputs) }}
+          slsa-workflow-masked-inputs: username
+
+  slsa-run:
+    needs: [slsa-setup]
+    permissions:
+      id-token: write # For signing.
+      contents: read # For code access.
+      actions: read # For the entrypoint.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/delegator_lowperms-generic_slsa3.yml@main
+    with:
+      slsa-token: ${{ needs.slsa-setup.outputs.slsa-token }}
+    secrets:
+      secret1: ${{ inputs.password }}
+      secret2: ${{ inputs.token }}
+  
+  publish:
+    needs: [slsa-run]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write # For asset uploads.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download provenance
+        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-attestations-download@main
+        with:
+          name: ${{ needs.slsa-run.outputs.attestations-download-name }}
+          sha256: ${{ needs.slsa-run.outputs.attestations-download-sha256 }}
+
+      - name: Upload provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUT: ${{ needs.slsa-run.outputs.attestations-download-name }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          # Get the tag.
+          tag="$(echo $REF | cut -d '/' -f3-)"
+
+          # List attestations.
+          find "$OUT" -type f | tee ./FILES
+
+          # Upload attestations.
+          while IFS= read -r line; do
+              file="$line"
+              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+          done < FILES
+
+      # Artifacts are downloaded in the current directory. The downloaded folder
+      # is the one uploaded by the TCA, which in our case is called "artifacts".
+      - name: Download artifacts
+        uses: slsa-framework/slsa-github-generator/actions/delegator/secure-download-folder@main
+        with:
+          name: ${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-name }}
+          sha256: ${{ fromJson(needs.slsa-run.outputs.build-artifacts-outputs).artifact-download-sha256 }}
+          path: "."
+
+      - name: Upload the artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          # Get the tag.
+          tag="$(echo $REF | cut -d '/' -f3-)"
+
+          # List artifacts.
+          find artifacts/ -type f | tee ./FILES
+
+          # Upload artifacts.
+          while IFS= read -r line; do
+              file="$line"
+              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+          done < FILES
+        
