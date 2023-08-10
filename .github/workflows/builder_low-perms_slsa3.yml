@@ -146,7 +146,7 @@ jobs:
           # Upload attestations.
           while IFS= read -r line; do
               file="$line"
-              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+              echo gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
           done < FILES
 
       # Artifacts are downloaded in the current directory. The downloaded folder
@@ -174,6 +174,6 @@ jobs:
           # Upload artifacts.
           while IFS= read -r line; do
               file="$line"
-              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+              echo gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
           done < FILES
         

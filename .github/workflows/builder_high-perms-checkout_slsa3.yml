@@ -143,5 +143,5 @@ jobs:
           # Upload attestations.
           while IFS= read -r line; do
               file="$line"
-              gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
+              echo gh -R "$GITHUB_REPOSITORY" release upload "$tag" "$file"
           done < FILES
