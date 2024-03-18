@@ -68,7 +68,7 @@ runs:
     # builders are run concurrently. This is simplified
     # for our e2e tests.
     - name: Upload the artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.build.outputs.artifact }}
         path: ${{ steps.build.outputs.artifact }}
