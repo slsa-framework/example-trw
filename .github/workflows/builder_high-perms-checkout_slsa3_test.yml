@@ -28,7 +28,7 @@ jobs:
       contents: write # For asset release.
       packages: write # For package upload.
       actions: read # For getting workflow run info.
-    uses: slsa-framework/example-trw/.github/workflows/builder_high-perms-checkout_slsa3.yml@v1.10.0
+    uses: slsa-framework/example-trw/.github/workflows/builder_high-perms-checkout_slsa3.yml@main
     with:
       artifact: my-artifact
       filename: high-perms-checkout/src/build.txt
