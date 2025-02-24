@@ -27,7 +27,7 @@ jobs:
       id-token: write # For signing
       contents: write # For asset release.
       actions: read # For getting workflow run info.
-    uses: slsa-framework/example-trw/.github/workflows/builder_low-perms_slsa3.yml@main # v0.0.1 has all refs at main.
+    uses: slsa-framework/example-trw/.github/workflows/builder_low-perms_slsa3.yml@v2.1.0 # v0.0.1 has all refs at main.
     with:
       artifact: my-artifact
       content: "hello world"
